@@ -1,0 +1,242 @@
+{
+	"info": {
+		"_postman_id": "7dccb82d-5b34-4d3e-a736-6ba3241a03f9",
+		"name": "GitHub API Test",
+		"description": "Homework for Data Source API Analyst role.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46089406",
+		"_collection_link": "https://agustin-6234041.postman.co/workspace/Agustin's-Workspace~11560aa2-b88e-4356-82dc-1df3d2de3d1b/collection/46089406-7dccb82d-5b34-4d3e-a736-6ba3241a03f9?action=share&source=collection_link&creator=46089406"
+	},
+	"item": [
+		{
+			"name": "Search Repositories",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/search/repositories?q=python&sort=stars&order=desc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search",
+						"repositories"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "python"
+						},
+						{
+							"key": "sort",
+							"value": "stars"
+						},
+						{
+							"key": "order",
+							"value": "desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Commits",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response is an array with the expected number of elements\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.has.lengthOf(5, \"Expected 5 elements in the response array\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the structure of the commit object\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"    \r",
+							"    responseData.forEach(commit => {\r",
+							"        pm.expect(commit).to.be.an('object');\r",
+							"        pm.expect(commit).to.include.all.keys('sha', 'node_id', 'commit', 'url', 'html_url', 'comments_url', 'author', 'committer', 'parents');\r",
+							"        \r",
+							"        pm.expect(commit.commit).to.be.an('object').that.includes.all.keys('author', 'committer', 'message', 'tree', 'url', 'comment_count', 'verification');\r",
+							"        \r",
+							"        pm.expect(commit.commit.author).to.include.all.keys('name', 'email', 'date');\r",
+							"        pm.expect(commit.commit.committer).to.include.all.keys('name', 'email', 'date');\r",
+							"        pm.expect(commit.commit.tree).to.include.all.keys('sha', 'url');\r",
+							"        \r",
+							"        pm.expect(commit.author).to.include.all.keys('login', 'id', 'node_id', 'avatar_url', 'url', 'html_url', 'site_admin');\r",
+							"        pm.expect(commit.committer).to.include.all.keys('login', 'id', 'node_id', 'avatar_url', 'url', 'html_url', 'site_admin');\r",
+							"        \r",
+							"        pm.expect(commit.parents).to.be.an('array').that.is.not.empty;\r",
+							"        commit.parents.forEach(parent => {\r",
+							"            pm.expect(parent).to.include.all.keys('sha', 'url', 'html_url');\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Author and committer names are non-empty strings\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"    responseData.forEach(commit => {\r",
+							"        pm.expect(commit.commit.author.name).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Author name should not be empty\");\r",
+							"        pm.expect(commit.commit.committer.name).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Committer name should not be empty\");\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "Accept: application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/repos/torvalds/linux/commits?per_page=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						"torvalds",
+						"linux",
+						"commits"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Repository Contents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response is an array with the expected structure\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array');\r",
+							"    \r",
+							"    responseData.forEach(item => {\r",
+							"        pm.expect(item).to.be.an('object');\r",
+							"        pm.expect(item).to.have.all.keys('name', 'path', 'sha', 'size', 'url', 'html_url', 'git_url', 'download_url', 'type', '_links');\r",
+							"        \r",
+							"        pm.expect(item.size).to.be.a('number');\r",
+							"        \r",
+							"        const links = item._links;\r",
+							"        pm.expect(links).to.be.an('object');\r",
+							"        pm.expect(links).to.have.all.keys('self', 'git', 'html');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Each object in the array has the required fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"    responseData.forEach(function(item) {\r",
+							"        pm.expect(item).to.be.an('object').that.includes.all.keys('name', 'path', 'sha', 'size', 'url', 'html_url', 'git_url', 'download_url', 'type', '_links');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/repos/torvalds/linux/contents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						"torvalds",
+						"linux",
+						"contents"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
