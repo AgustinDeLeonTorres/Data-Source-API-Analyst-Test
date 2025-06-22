@@ -1,27 +1,25 @@
 GitHub API Postman Test Assignment
 
 Overview
-Goal: Test GitHub's API endpoints (`/search/repositories`, `/commits`, `/contents`) using Postman.
-Tools Used: Postman, GitHub API.
+Tested 3 GitHub API endpoints using Postman for a job assignment.
 
 Endpoints Tested
-1. Search Repositories: `GET /search/repositories?q=python`
-2. List Commits: `GET /repos/torvalds/linux/commits`
-3. Get Contents: `GET /repos/torvalds/linux/contents`
-
-Key Features
-Authentication: Used GitHub Personal Access Token (PAT).
-Pagination: Added `?page=1&per_page=5` to test multi-page results.
-Error Handling: Validated status codes (200, 403, 404).
-
-Files
-- `Postman_Collection/GitHub_API_Test.postman_collection.json`: Exported Postman tests.
+1. `GET /search/repositories` - Search public repos
+2. `GET /repos/{owner}/{repo}/commits` - Get commit history
+3. `GET /repos/{owner}/{repo}/contents` - List repo files
 
 How to Run
-1. Import the `.json` file into Postman.
-2. Set environment variables:
+1. Import the `.json` file into Postman
+2. Set variables:
    - `base_url`: `https://api.github.com`
-   - `token`: Your GitHub PAT.
+   - `token`: [Your GitHub PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 
-Links
-- [GitHub API Docs](https://docs.github.com/en/rest)
+Troubleshooting 
+| Error | Solution |
+|-------|----------|
+| 401 Unauthorized | 1. Check token is valid<br> 2. Make sure token has `repo` permissions |
+| 403 Rate Limit | Wait 1 hour or [check limits](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting) |
+| 404 Not Found | Double-check repository name (e.g., `torvalds/linux`) |
+
+Files
+- `Postman_Collection/`: Contains all API tests
