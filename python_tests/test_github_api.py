@@ -50,7 +50,29 @@ def test_get_contents():
     except Exception as e:
         print(f"Contents failed: {str(e)}")
 
+def test_rate_limits():
+    """Test GitHub rate limit awareness"""
+    url = f"{BASE_URL}/rate_limit"
+    response = requests.get(url, headers=HEADERS)
+    
+    assert response.status_code == 200
+    limits = response.json()["resources"]["core"]
+    print(f"Rate limits: {limits['remaining']}/{limits['limit']} remaining")
+    assert limits['remaining'] > 0, "Rate limit exceeded"
+
+def test_pagination():
+    """Test pagination handling"""
+    for page in range(1, 3):  # Test first 2 pages
+        url = f"{BASE_URL}/search/repositories?q=python&page={page}&per_page=5"
+        response = requests.get(url, headers=HEADERS)
+        
+        assert response.status_code == 200
+        assert len(response.json()["items"]) > 0
+        print(f"Page {page} pagination test passed")
+
 if __name__ == "__main__":
     test_search_repos()
     test_list_commits()
     test_get_contents()
+    test_rate_limits()   
+    test_pagination() 
