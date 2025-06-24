@@ -1,0 +1,2 @@
+.env          # Blocks my token file
+__pycache__/  # Blocks Python cache folders 

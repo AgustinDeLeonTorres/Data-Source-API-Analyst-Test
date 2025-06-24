@@ -1,0 +1,675 @@
+{
+	"info": {
+		"_postman_id": "7dccb82d-5b34-4d3e-a736-6ba3241a03f9",
+		"name": "GitHub API Test",
+		"description": "Homework for Data Source API Analyst role.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46089406",
+		"_collection_link": "https://agustin-6234041.postman.co/workspace/Agustin's-Workspace~11560aa2-b88e-4356-82dc-1df3d2de3d1b/collection/46089406-7dccb82d-5b34-4d3e-a736-6ba3241a03f9?action=share&source=collection_link&creator=46089406"
+	},
+	"item": [
+		{
+			"name": "Error Handling Tests",
+			"item": [
+				{
+					"name": "Invalid Token Test - 401",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 401 for invalid token\", () => {\r",
+									"    pm.response.to.have.status(401);\r",
+									"    pm.expect(pm.response.json().message).to.include(\"Bad credentials\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid_token_123",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.github.v3+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Not Found Test - 404",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 404 for missing repo\", () => {\r",
+									"    pm.response.to.have.status(404);\r",
+									"    pm.expect(pm.response.json().message).to.include(\"Not Found\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.github.v3+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/repos/nonexistentowner/nonexistentrepo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"repos",
+								"nonexistentowner",
+								"nonexistentrepo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Params Test - 422",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 422 for invalid per_page\", () => {\r",
+									"    pm.response.to.have.status(422);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/vnd.github.v3+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/search/repositories?per_page=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"search",
+								"repositories"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Missing Header Test - 400",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 400 for missing auth\", () => {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "Accept: application/vnd.github.v3+json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search Repositories",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response has required fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData).to.have.all.keys('total_count', 'incomplete_results', 'items');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the structure of the items array\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.items).to.be.an('array').that.is.not.empty;\r",
+							"    \r",
+							"    responseData.items.forEach(item => {\r",
+							"        pm.expect(item).to.have.all.keys('id', 'node_id', 'name', 'full_name', 'private', 'owner', 'html_url', 'description', 'fork', 'url', 'forks_url', 'keys_url', 'collaborators_url', 'teams_url', 'hooks_url', 'issue_events_url', 'events_url', 'assignees_url', 'branches_url', 'tags_url', 'blobs_url', 'git_tags_url', 'git_refs_url', 'trees_url', 'statuses_url', 'languages_url', 'stargazers_url', 'contributors_url', 'subscribers_url', 'subscription_url', 'commits_url', 'git_commits_url', 'comments_url', 'issue_comment_url', 'contents_url', 'compare_url', 'merges_url', 'archive_url', 'downloads_url', 'issues_url', 'pulls_url', 'milestones_url', 'notifications_url', 'labels_url', 'releases_url', 'deployments_url', 'created_at', 'updated_at', 'pushed_at', 'git_url', 'ssh_url', 'clone_url', 'svn_url', 'homepage', 'size', 'stargazers_count', 'watchers_count', 'language', 'has_issues', 'has_projects', 'has_downloads', 'has_wiki', 'has_pages', 'has_discussions', 'forks_count', 'mirror_url', 'archived', 'disabled', 'open_issues_count', 'license', 'allow_forking', 'is_template', 'web_commit_signoff_required', 'topics', 'visibility', 'forks', 'open_issues', 'watchers', 'default_branch', 'permissions', 'score');\r",
+							"        \r",
+							"        pm.expect(item.owner).to.have.all.keys('login', 'id', 'node_id', 'avatar_url', 'gravatar_id', 'url', 'html_url', 'followers_url', 'following_url', 'gists_url', 'starred_url', 'subscriptions_url', 'organizations_url', 'repos_url', 'events_url', 'received_events_url', 'type', 'user_view_type', 'site_admin');\r",
+							"        \r",
+							"        pm.expect(item.license).to.have.all.keys('key', 'name', 'spdx_id', 'url', 'node_id');\r",
+							"        \r",
+							"        pm.expect(item.permissions).to.have.all.keys('admin', 'maintain', 'push', 'triage', 'pull');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"License object has expected fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData.items).to.be.an('array').that.is.not.empty;\r",
+							"    \r",
+							"    responseData.items.forEach(item => {\r",
+							"        pm.expect(item.license).to.be.an('object').that.has.all.keys('key', 'name', 'url');\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/search/repositories?q=python&page=1&per_page=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search",
+						"repositories"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "python"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "per_page",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Commits",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response is an array with the expected number of elements\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.has.lengthOf(5, \"Expected 5 elements in the response array\");\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Validate the structure of the commit object\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"    \r",
+							"    responseData.forEach(commit => {\r",
+							"        pm.expect(commit).to.be.an('object');\r",
+							"        pm.expect(commit).to.include.all.keys('sha', 'node_id', 'commit', 'url', 'html_url', 'comments_url', 'author', 'committer', 'parents');\r",
+							"        \r",
+							"        pm.expect(commit.commit).to.be.an('object').that.includes.all.keys('author', 'committer', 'message', 'tree', 'url', 'comment_count', 'verification');\r",
+							"        \r",
+							"        pm.expect(commit.commit.author).to.include.all.keys('name', 'email', 'date');\r",
+							"        pm.expect(commit.commit.committer).to.include.all.keys('name', 'email', 'date');\r",
+							"        pm.expect(commit.commit.tree).to.include.all.keys('sha', 'url');\r",
+							"        \r",
+							"        pm.expect(commit.author).to.include.all.keys('login', 'id', 'node_id', 'avatar_url', 'url', 'html_url', 'site_admin');\r",
+							"        pm.expect(commit.committer).to.include.all.keys('login', 'id', 'node_id', 'avatar_url', 'url', 'html_url', 'site_admin');\r",
+							"        \r",
+							"        pm.expect(commit.parents).to.be.an('array').that.is.not.empty;\r",
+							"        commit.parents.forEach(parent => {\r",
+							"            pm.expect(parent).to.include.all.keys('sha', 'url', 'html_url');\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Author and committer names are non-empty strings\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"    responseData.forEach(commit => {\r",
+							"        pm.expect(commit.commit.author.name).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Author name should not be empty\");\r",
+							"        pm.expect(commit.commit.committer.name).to.exist.and.to.be.a('string').and.to.have.lengthOf.at.least(1, \"Committer name should not be empty\");\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "Accept: application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/repos/torvalds/linux/commits?per_page=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						"torvalds",
+						"linux",
+						"commits"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Repository Contents",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Content-Type is application/json\", function () {\r",
+							"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response is an array with the expected structure\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array');\r",
+							"    \r",
+							"    responseData.forEach(item => {\r",
+							"        pm.expect(item).to.be.an('object');\r",
+							"        pm.expect(item).to.have.all.keys('name', 'path', 'sha', 'size', 'url', 'html_url', 'git_url', 'download_url', 'type', '_links');\r",
+							"        \r",
+							"        pm.expect(item.size).to.be.a('number');\r",
+							"        \r",
+							"        const links = item._links;\r",
+							"        pm.expect(links).to.be.an('object');\r",
+							"        pm.expect(links).to.have.all.keys('self', 'git', 'html');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Each object in the array has the required fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"    \r",
+							"    pm.expect(responseData).to.be.an('array').that.is.not.empty;\r",
+							"\r",
+							"    responseData.forEach(function(item) {\r",
+							"        pm.expect(item).to.be.an('object').that.includes.all.keys('name', 'path', 'sha', 'size', 'url', 'html_url', 'git_url', 'download_url', 'type', '_links');\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response time is less than 200ms\", function () {\r",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"packages": {},
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/repos/torvalds/linux/contents",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"repos",
+						"torvalds",
+						"linux",
+						"contents"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check Rate Limits",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Rate limits available\", () => {\r",
+							"    const limits = pm.response.json().resources.core;\r",
+							"    pm.expect(limits.remaining).to.be.above(0);\r",
+							"    console.log(`Remaining requests: ${limits.remaining}/${limits.limit}`);\r",
+							"});\r",
+							"pm.test(\"Rate limit headers exist\", () => {\r",
+							"    pm.expect(pm.response.headers.get('X-RateLimit-Limit')).to.exist;\r",
+							"    pm.expect(pm.response.headers.get('X-RateLimit-Remaining')).to.exist;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "Accept: application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/rate_limit",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"rate_limit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Pagination Test:",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Page 2 has results\", () => {\r",
+							"    pm.expect(pm.response.json().items.length).to.be.above(0);\r",
+							"});\r",
+							"pm.test(\"Pagination links exist\", () => {\r",
+							"    pm.expect(pm.response.headers.get('Link')).to.include('rel=\"next\"');\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/search/repositories?q=python&page=2&per_page=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"search",
+						"repositories"
+					],
+					"query": [
+						{
+							"key": "q",
+							"value": "python"
+						},
+						{
+							"key": "page",
+							"value": "2"
+						},
+						{
+							"key": "per_page",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					"pm.test(\"Repo has stargazers count\", () => {\r",
+					"  const repo = pm.response.json().items[0];\r",
+					"  pm.expect(repo).to.have.property('stargazers_count');\r",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
