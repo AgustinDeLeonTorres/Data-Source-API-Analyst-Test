@@ -1,3 +1,10 @@
-.env          # Blocks my token file
-__pycache__/  # Blocks Python cache folders .env
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment
 .env
+.env*
+
+# Virtual Environment
+venv/
