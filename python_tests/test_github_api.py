@@ -75,4 +75,4 @@ if __name__ == "__main__":
     test_list_commits()
     test_get_contents()
     test_rate_limits()   
-    test_pagination() 
+    test_pagination()  
