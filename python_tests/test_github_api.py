@@ -70,9 +70,52 @@ def test_pagination():
         assert len(response.json()["items"]) > 0
         print(f"Page {page} pagination test passed")
 
+def test_403_forbidden():
+    """Test handling of rate limits/insufficient permissions"""
+    try:
+        # Try accessing a protected endpoint with insufficient scopes
+        url = f"{BASE_URL}/user/emails"  # Requires user:email scope
+        response = requests.get(url, headers=HEADERS)
+        
+        if response.status_code == 403:
+            print("✓ Got expected 403 Forbidden (needs token with user:email scope)")
+        else:
+            print(f"Got {response.status_code} instead of 403")
+            
+    except Exception as e:
+        print(f"403 test failed: {str(e)}")
+
+def test_404_not_found():
+    """Test handling of non-existent resources"""
+    try:
+        url = f"{BASE_URL}/repos/nonexistentowner/nonexistentrepo"
+        response = requests.get(url, headers=HEADERS)
+        
+        assert response.status_code == 404
+        assert "Not Found" in response.json()["message"]
+        print("✓ 404 Not Found test passed")
+        
+    except Exception as e:
+        print(f"404 test failed: {str(e)}")
+
+def test_422_validation():
+    """Test handling of invalid parameters"""
+    try:
+        url = f"{BASE_URL}/search/repositories?per_page=0"  # Invalid value
+        response = requests.get(url, headers=HEADERS)
+        
+        assert response.status_code == 422
+        print("✓ 422 Validation test passed")
+        
+    except Exception as e:
+        print(f"422 test failed: {str(e)}")
+
 if __name__ == "__main__":
     test_search_repos()
     test_list_commits()
     test_get_contents()
     test_rate_limits()   
-    test_pagination()  
+    test_pagination() 
+    test_403_forbidden()  
+    test_404_not_found()  
+    test_422_validation()  
