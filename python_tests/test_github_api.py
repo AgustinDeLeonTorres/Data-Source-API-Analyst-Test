@@ -71,16 +71,22 @@ def test_pagination():
         print(f"Page {page} pagination test passed")
 
 def test_403_forbidden():
-    """Test handling of rate limits/insufficient permissions"""
+    """Test handling of insufficient permissions by trying to access a repo's 
+    collaborators list which requires admin permissions"""
     try:
-        # Try accessing a protected endpoint with insufficient scopes
-        url = f"{BASE_URL}/user/emails"  # Requires user:email scope
+        # Try accessing an endpoint that requires admin privileges
+        url = f"{BASE_URL}/repos/torvalds/linux/collaborators"
         response = requests.get(url, headers=HEADERS)
         
         if response.status_code == 403:
-            print("✓ Got expected 403 Forbidden (needs token with user:email scope)")
+            print("✓ Got expected 403 Forbidden (needs admin permissions)")
         else:
             print(f"Got {response.status_code} instead of 403")
+            print(f"Response: {response.json()}")  # Helpful for debugging
+        print(f"Response: {response.json()}")  # Helpful for debugging
+
+    except Exception as e:
+        print(f"403 test failed: {str(e)}")
             
     except Exception as e:
         print(f"403 test failed: {str(e)}")
